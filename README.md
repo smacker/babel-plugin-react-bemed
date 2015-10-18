@@ -1,4 +1,4 @@
-# babel-plugin-hello-world
+# babel-plugin-react-bemed
 
 Bemed react jsx plugin for Babel.
 
@@ -96,7 +96,7 @@ Defaults:
     "extra": {
         "react-bemed": {
             "elemDelim": "__",
-            "modDelim": '_',
+            "modDelim": "_",
             "bevis": false
         }
     }
