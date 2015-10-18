@@ -16,5 +16,10 @@
   "scripts": {
     "build": "./node_modules/.bin/babel --blacklist strict src --out-dir dist",
     "test": "node test"
-  }
+  },
+  "keywords": [
+    "babel-plugin",
+    "react",
+    "bem"
+  ]
 }
