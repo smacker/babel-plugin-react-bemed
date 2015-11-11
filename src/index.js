@@ -31,6 +31,7 @@ module.exports = function ({ Plugin, types: t }) {
         let properties = bReactASTBody.declarations[0].init.properties;
         properties[0].value = t.literal(opts.modDelim);
         properties[1].value = t.literal(opts.bevis);
+        bReactASTBody._compact = true;
 
         this.unshiftContainer('body', bReactASTBody);
       },
