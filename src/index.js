@@ -3,7 +3,7 @@ const path = require('path');
 const babel = require('babel');
 
 const bReactContent = fs.readFileSync(path.join(__dirname, 'bReact.js'), 'utf8');
-const bReactASTBody = babel.parse(bReactContent.replace('\n', '')).body[0];
+const bReactASTBody = babel.parse(bReactContent).body[0];
 
 function getOptions(file) {
   var opts = file.opts.extra['react-bemed'] || {};
@@ -19,6 +19,20 @@ function camelToDash(input) {
   return input
           .replace(/([A-Z])/g, i => '-' + i.toLowerCase())
           .replace(/^-/, '');
+}
+
+function safeGetter(obj, getPath) {
+  getPath = getPath.split('.');
+
+  let result = obj;
+  for (let i = 0; i < getPath.length; i++) {
+    result = result[getPath[i]];
+    if (!result) {
+      return null;
+    }
+  }
+
+  return result;
 }
 
 module.exports = function ({ Plugin, types: t }) {
@@ -37,17 +51,33 @@ module.exports = function ({ Plugin, types: t }) {
         this.unshiftContainer('body', bReactASTBody);
       },
 
-      JSXOpeningElement(node, parent, scope) {
-        var ln = node.attributes.length;
-
-        if (!ln) {
+      JSXOpeningElement(node, parent, scope, file) {
+        if (!node.attributes.length) {
           return;
         }
 
-        const opts = getOptions(scope.hub.file);
+        const opts = getOptions(file);
 
-        var blockName = scope.parent.block.id.name;
-        blockName = camelToDash(blockName);
+        let blockName = scope.data.__bemBlockName;
+
+        if (!blockName) {
+          // A functional component using an ES2015 (ES6) arrow function
+          if (safeGetter(scope, 'block.type') === 'ArrowFunctionExpression' &&
+              safeGetter(scope, 'parentBlock.type') === 'VariableDeclarator') {
+            blockName = scope.parentBlock.id.name;
+          // Class component
+          } else if (safeGetter(scope, 'parent.block.type') === 'ClassDeclaration') {
+            blockName = scope.parent.block.id.name;
+          }
+
+          if (blockName) {
+            blockName = camelToDash(blockName);
+            scope.data.__bemBlockName = blockName;
+          } else {
+            // Don't process unknown constractions
+            return;
+          }
+        }
 
         node.attributes.forEach(attr => {
           if (attr.name.name === 'bElem') {
