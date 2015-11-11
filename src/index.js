@@ -1,7 +1,8 @@
 const fs = require('fs');
-const babel = require('babel')
+const path = require('path');
+const babel = require('babel');
 
-const bReactContent = fs.readFileSync(__dirname + '/bReact.js', 'utf8');
+const bReactContent = fs.readFileSync(path.join(__dirname, 'bReact.js'), 'utf8');
 const bReactASTBody = babel.parse(bReactContent.replace('\n', '')).body[0];
 
 function getOptions(file) {
@@ -40,7 +41,7 @@ module.exports = function ({ Plugin, types: t }) {
         var ln = node.attributes.length;
 
         if (!ln) {
-          return
+          return;
         }
 
         const opts = getOptions(scope.hub.file);
